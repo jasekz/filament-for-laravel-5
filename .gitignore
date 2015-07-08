@@ -1,0 +1,11 @@
+/vendor
+/node_modules
+/storage/logs/*
+/storage/app/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+Homestead.yaml
+.env
+composer.lock
+.gitattributes
