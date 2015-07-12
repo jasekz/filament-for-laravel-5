@@ -5,6 +5,7 @@
 /storage/framework/cache/*
 /storage/framework/sessions/*
 /storage/framework/views/*
+/storage/tmp
 Homestead.yaml
 .env
 composer.lock

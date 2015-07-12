@@ -75,6 +75,7 @@ Route::get('admin/dashboard', [
 Route::group(['prefix' => 'admin'], function () {
     Route::resource('account', 'Admin\MyAccountController');
 });
+
 /*
  * |--------------------------------------------------------------------------
  * | Users
@@ -85,4 +86,14 @@ Route::group(['prefix' => 'admin'], function () {
     Route::resource('users', 'Admin\UserController');
     Route::resource('roles', 'Admin\RoleController');
     Route::resource('permissions', 'Admin\PermissionController');
+});
+
+/*
+ * |--------------------------------------------------------------------------
+ * | Files
+ * |--------------------------------------------------------------------------
+ * |
+ */
+Route::group(['prefix' => 'admin'], function () {
+    Route::resource('files', 'Admin\FileController');
 });

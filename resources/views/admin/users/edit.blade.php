@@ -65,6 +65,30 @@
                 </select>
             </div>
 
+            <div
+                class="form-group laradrop-test"
+                laradrop-upload-handler="{{ route('admin.files.store') }}"
+                laradrop-file-source="{{ route('admin.files.index') }}"
+                laradrop-csrf-token="{{ csrf_token() }}" >
+                <label>{{ trans('app.image') }}</label>
+                <div class='input-group'>
+                    <input
+                        class="form-control laradrop-input"
+                        type="text"
+                        name="image"
+                        id='{$name}'>
+                    <span class="input-group-btn">
+                        <button
+                            class='btn btn-default laradrop-select-file'
+                            type='button'>{{ trans('app.selectFile') }}</button>
+                        <button
+                            class='btn btn-danger laradrop-remove-file'
+                            type='button'>{{ trans('app.removeFile') }}</button>
+                    </span>
+                </div>
+                <div class="laradrop-file-thumb"></div>
+            </div>
+
             <hr>
 
             <!-- Buttons -->

@@ -1,26 +1,27 @@
-$(document).ready(function() {
+jQuery(document).ready(function() {
 	app.init();
 });
 
 var app = {
 	init : function(){
 		app.submitForm();
-        $('.sortable').sorTable();
-        $('.pagination').sortaPaginate();
-        $('.show-x-entries').sortaShowXEntries();
+        jQuery('.sortable').sorTable();
+        jQuery('.pagination').sortaPaginate();
+        jQuery('.show-x-entries').sortaShowXEntries();
         
-        $('.submit-form').click(function(e){ // attaches an action to the form based on the button clicked, e.g. save and new, save and exit
+        jQuery('.submit-form').click(function(e){ // attaches an action to the form based on the button clicked, e.g. save and new, save and exit
         	e.preventDefault();
-        	var form = $(this).closest('form');
+        	var form = jQuery(this).closest('form');
         	form.find('#action').remove();
-        	form.append('<input type="hidden" name="action" id="action" value="'+$(this).attr('action')+'" />');
+        	form.append('<input type="hidden" name="action" id="action" value="'+jQuery(this).attr('action')+'" />');
         	form.submit();
         });
         
         app.deleteEntry();
+        app.initDropzone();
 	},
 	deleteEntry : function(){
-		$('.delete-entry').click(function(e){
+		jQuery('.delete-entry').click(function(e){
 			e.preventDefault();
 			
 			if(!confirm('Are you sure?')) {
@@ -29,11 +30,11 @@ var app = {
 			
 	    	app.clearErrors();
 	    	
-			$.ajax({
-			    url: $(this).attr('url'),
+			jQuery.ajax({
+			    url: jQuery(this).attr('url'),
 			    type: 'DELETE',
 		        headers: {
-		        	'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+		        	'X-CSRF-TOKEN': jQuery('meta[name="csrf-token"]').attr('content')
 		        },
 			    dataType: 'json',
 			    success: function(res) {
@@ -52,12 +53,12 @@ var app = {
                     
                     var msg = res.msg ? res.msg : 'Unknown Error';
                     if (res.error){
-                        $('.page-header').after('<div class="alert alert-danger alert-dismissible" role="alert">'+
+                        jQuery('.page-header').after('<div class="alert alert-danger alert-dismissible" role="alert">'+
                       		  '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
                       		  msg+
                       		'</div>');
                     } else {
-                        $('.page-header').after('<div class="alert alert-success alert-dismissible" role="alert">'+
+                        jQuery('.page-header').after('<div class="alert alert-success alert-dismissible" role="alert">'+
                         		  '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
                         		  msg+
                         		'</div>');
@@ -67,31 +68,31 @@ var app = {
 		});
 	},
 	submitForm : function() { // ajax form submission
-		$('form.ajaxSubmission').submit(function(e){
+		jQuery('form.ajaxSubmission').submit(function(e){
 			e.preventDefault();
 			
-			var form = $(this),
+			var form = jQuery(this),
 				method = form.attr('method'),
 				action = form.attr('action');
 			
 			showProcessing();
 			
-			$.ajax({
+			jQuery.ajax({
 			    url: action,
 			    type: method,
 			    data: form.serialize(),
 			    dataType: 'json',
 		        headers: {
-		        	'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+		        	'X-CSRF-TOKEN': jQuery('meta[name="csrf-token"]').attr('content')
 		        },
 			    success: function(res) {
 			    	app.clearErrors();
 			    	hideProcessing();
                     var msg = res.msg ? res.msg : 'Unknown Error';
                     if(res.errors) {
-                        $.each(res.errors, function(k,v){
-                            $('#'+k).closest('.form-group').addClass('has-error');
-                            $('#'+k).after('<span class="has-error help-block error">'+v+'</span>');
+                        jQuery.each(res.errors, function(k,v){
+                            jQuery('#'+k).closest('.form-group').addClass('has-error');
+                            jQuery('#'+k).after('<span class="has-error help-block error">'+v+'</span>');
                         });                            
                     }
                     if(res.redirect){
@@ -107,12 +108,12 @@ var app = {
                         return false;
                     }
                     if (res.error){
-                        $('.page-header').after('<div class="alert alert-danger alert-dismissible" role="alert">'+
+                        jQuery('.page-header').after('<div class="alert alert-danger alert-dismissible" role="alert">'+
                       		  '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
                       		  msg+
                       		'</div>');
                     } else {
-                        $('.page-header').after('<div class="alert alert-success alert-dismissible" role="alert">'+
+                        jQuery('.page-header').after('<div class="alert alert-success alert-dismissible" role="alert">'+
                         		  '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
                         		  msg+
                         		'</div>');
@@ -133,41 +134,165 @@ var app = {
 		});
 	},
 	clearErrors : function(){
-    	$('.has-error').removeClass('has-error');
-        $('.alert-danger').removeClass('alert-danger');
-        $('.error').remove();
-        $('.alert').hide();
+    	jQuery('.has-error').removeClass('has-error');
+        jQuery('.alert-danger').removeClass('alert-danger');
+        jQuery('.error').remove();
+        jQuery('.alert').hide();
+	},
+	initDropzone: function(){
+		jQuery('.laradrop-test').laradrop({
+			fileHandler: null,
+			fileSrc: null,
+			csrfToken: null,
+			csrfTokenField: null,
+			processingDisplay: null
+		});
 	}
 }
 
+jQuery.fn.laradrop = function(options) {	
+    Dropzone.autoDiscover = false;
+    var fileHandler = options.fileHandler,
+    	fileSrc = options.fileSrc,
+    	csrfToken = options.csrfToken,
+    	csrfTokenField = options.csrfTokenField ? options.csrfTokenField : '_token',
+    	processingDisplay = options.processingDisplay ? options.processingDisplay : 'processing...',
+    	uid = new Date().getTime(),
+    	laradropObj = jQuery(this);
+   
+   if(jQuery(this).attr('laradrop-upload-handler')) {
+	   fileHandler = jQuery(this).attr('laradrop-upload-handler');
+   }
+   
+   if(jQuery(this).attr('laradrop-file-source')) {
+	   fileSrc = jQuery(this).attr('laradrop-file-source');
+   }
+   
+   if(jQuery(this).attr('laradrop-csrf-token')) {
+	   csrfToken = jQuery(this).attr('laradrop-csrf-token');
+   }
+   
+   if(jQuery(this).attr('laradrop-csrf-token-field')) {
+	   csrfTokenField = jQuery(this).attr('laradrop-csrf-token-field');
+   }
+    	
+   jQuery('body').after(getModalContainer()); 	
 
+    var dzImg = new Dropzone("#modal-container-"+uid+" .btn-upload", { 
+        url: fileHandler,
+        init: function(){
+        	var btnText = jQuery("#modal-container-"+uid+" .btn-upload").text();
+        	this.on("sending", function(file, xhr, data) {
+                data.append(csrfTokenField, csrfToken);
+                jQuery("#modal-container-"+uid+" .btn-upload").text(processingDisplay);
+            });
+            
+            this.on("success", function(obj, res) {
+            	jQuery.get(fileSrc, function(files){ 
+            		displayMedia(files);
+            		jQuery("#modal-container-"+uid+" .btn-upload").text(btnText);
+            	});
+            });
+            
+            this.on("addedfile", function(file) {
+            	jQuery('.dz-preview, .dz-processing, .dz-image-preview, .dz-success, .dz-complete').remove();
+            	return false;
+            });
+        }
+    });    
+    
+    	
+	jQuery(this).find('.laradrop-select-file').click(function(e){
+		e.preventDefault();
+		jQuery.get(fileSrc, function(res){
+			displayMedia(res);
+			jQuery('.laradrop-modal-container').modal('toggle');
+		});
+	});
+
+	function displayMedia(res){
+			var out='<div  class="row list-group">';
+			jQuery.each(res.data, function(k,v){
+				out+=getThumbnailContainer().replace('[[fileSrc]]', v.file);
+			});
+			out+='</div></div>';
+			jQuery('.laradrop-modal-container').find('.modal-title').text('Media');
+			jQuery('.laradrop-modal-container').find('.modal-body').html(out);
+			jQuery('.laradrop-modal-container').find('.insert').click(function(){
+				var src = jQuery(this).closest('.laradrop-thumbnail').find('img').attr('src');
+				laradropObj.find('.laradrop-file-thumb').html('<img src="'+src+'" />');
+				laradropObj.find('.laradrop-input').val(src);
+				jQuery('.laradrop-modal-container').modal('hide');
+			});		
+	}	
+
+	function getModalContainer() {
+		return '\
+    	<div class="modal fade laradrop-modal-container" id="modal-container-'+uid+'" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">\
+		  <div class="modal-dialog modal-lg">\
+		    <div class="modal-content">\
+		      <div class="modal-header">\
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>\
+		        <h4 class="modal-title"></h4>\
+		      </div>\
+		      <div class="modal-body">\
+		        ...\
+		      </div>\
+		      <div class="modal-footer">\
+		        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\
+		        <button type="button" class="btn btn-primary btn-upload">Upload</button>\
+		      </div>\
+		    </div>\
+		  </div>\
+		</div>';
+	}
+	
+	function getThumbnailContainer() {
+		return '\
+		<div class="item laradrop-thumbnail col-xs-4 col-lg-4">\
+			<div class="thumbnail">\
+			<img class="group list-group-image" src="[[fileSrc]]" alt="" />\
+				<div class="caption">\
+					<div class="row">\
+						<div class="col-xs-6 col-md-3">\
+							<button class="btn btn-success insert">Insert</button>\
+						</div>\
+						<div class="col-xs-6 col-md-3">\
+							<button class="btn btn-danger delete">Delete</button>\
+						</div>\
+					</div>\
+				</div>\
+			</div>\
+		</div>'
+	}
+}
 
 /*
  * sorTable 
  * Add sort functionality to any table
  */
- $.fn.sorTable = function() {
+ jQuery.fn.sorTable = function() {
      var base_url = window.location.href.split('?')[0],
          url, display, direction, link, display_glyph = '';
      
- 	$(this).each(function(){
-     	url = base_url + '?sortby=' + $(this).attr('id') + '&dir=',
-     	display = $(this).text(),
+ 	jQuery(this).each(function(){
+     	url = base_url + '?sortby=' + jQuery(this).attr('id') + '&dir=',
+     	display = jQuery(this).text(),
      	direction = 'asc',
      	display_glyph = false;
 
- 	    if($.url().param('sortby') == $(this).attr('id')){
+ 	    if(jQuery.url().param('sortby') == jQuery(this).attr('id')){
  	        display_glyph = true;
-     	    if($.url().param('dir') == 'desc'){
+     	    if(jQuery.url().param('dir') == 'desc'){
      	        direction = 'desc';
      	    }
   	    }
   	    url+=(direction=='asc'?'desc':'asc');
 
-  	    $.each($.url().param(), function(k,v){
+  	    jQuery.each(jQuery.url().param(), function(k,v){
       	   if(k!='sortby' && k!='dir'){
         	      if(k=='filter'){
-           	      $.each(v, function(k2,v2){
+           	      jQuery.each(v, function(k2,v2){
                	      url+='&filter['+k2+']='+v2;
            	      });
        	      }else{
@@ -177,7 +302,7 @@ var app = {
   	    });
 
  	    link = '<a href="'+encodeURI(url)+'">'+display+'</a><span class="fa '+(display_glyph==false?'fa-sort':' fa-sort-'+(direction=='asc'?'asc':'desc'))+'" aria-hidden="true"></span>';
- 	    $(this).html(link);
+ 	    jQuery(this).html(link);
  	});
  }
 
@@ -185,17 +310,17 @@ var app = {
  * sortaPaginate
  * Add sort params to pagination links
  */
- $.fn.sortaPaginate = function() {
+ jQuery.fn.sortaPaginate = function() {
     var href = '',
-        params = $.url().param();    
+        params = jQuery.url().param();    
 
-    if(!$.isEmptyObject(params)){          
-     	$(this).find('a').each(function(){
-         	href = $(this).attr('href');
-         	$.each(params, function(k, v){
+    if(!jQuery.isEmptyObject(params)){          
+     	jQuery(this).find('a').each(function(){
+         	href = jQuery(this).attr('href');
+         	jQuery.each(params, function(k, v){
          	   if(k!='page'){
            	      if(k=='filter'){
-              	      $.each(v, function(k2,v2){
+              	      jQuery.each(v, function(k2,v2){
                   	      href+='&filter['+k2+']='+v2;
               	      });
           	      }else{
@@ -203,7 +328,7 @@ var app = {
           	      }
          	   }
          	});
-         	$(this).attr('href', encodeURI(href));
+         	jQuery(this).attr('href', encodeURI(href));
      	});
     }
  }
@@ -212,17 +337,17 @@ var app = {
   * sortaShowXEntries
   * Add sort params to 'show x entries' links
   */
-  $.fn.sortaShowXEntries = function() {
+  jQuery.fn.sortaShowXEntries = function() {
      var value = '',
-         params = $.url().param();    
+         params = jQuery.url().param();    
 
-     if(!$.isEmptyObject(params)){          
-      	$(this).find('option').each(function(){
-          	value = $(this).val();
-          	$.each(params, function(k, v){
+     if(!jQuery.isEmptyObject(params)){          
+      	jQuery(this).find('option').each(function(){
+          	value = jQuery(this).val();
+          	jQuery.each(params, function(k, v){
           	   if(k!='page' && k!='showEntries'){
             	      if(k=='filter'){
-               	      $.each(v, function(k2,v2){
+               	      jQuery.each(v, function(k2,v2){
                    	      value+='&filter['+k2+']='+v2;
                	      });
            	      }else{
@@ -230,11 +355,11 @@ var app = {
            	      }
           	   }
           	});
-          	$(this).val(encodeURI(value));
+          	jQuery(this).val(encodeURI(value));
       	});
      }
      
-     $(this).change(function(){
-    	 window.location = $(this).val();
+     jQuery(this).change(function(){
+    	 window.location = jQuery(this).val();
      });
   }

@@ -148,6 +148,7 @@ return [
 	     * Third party packages
 	     */
 	    Zizaco\Entrust\EntrustServiceProvider::class,
+        Aws\Laravel\AwsServiceProvider::class,
 
     ],
 
@@ -201,6 +202,7 @@ return [
 	     * Third party aliases
 	     */
 	    'Entrust' => Zizaco\Entrust\EntrustFacade::class,
+        'AWS' => Aws\Laravel\AwsFacade::class,
 
     ],
     
@@ -212,4 +214,5 @@ return [
     
     'appname' => 'Filament',
     'paginationLimit' => 10,
+    'aws_file_bucket' => env('AWS_FILE_BUCKET', ''),
 ];
