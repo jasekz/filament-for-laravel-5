@@ -51,4 +51,17 @@ class FileController extends AdminController {
         
         return response()->json(['status' => 'success']);
 	}
+	
+	public function destroy($id)
+	{ 	  
+        try {
+            $fileName = $this->file->delete($id);
+        } 
+
+        catch (Exception $e) {
+            return response()->json(['status' => 'error', 'data' => $e->getMessage()]);
+        }
+        
+        return response()->json(['status' => 'success']);
+	}
 }

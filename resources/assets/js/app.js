@@ -142,6 +142,7 @@ var app = {
 	initDropzone: function(){
 		jQuery('.laradrop-test').laradrop({
 			fileHandler: null,
+			fileDeleteHandler: null,
 			fileSrc: null,
 			csrfToken: null,
 			csrfTokenField: null,
@@ -153,15 +154,21 @@ var app = {
 jQuery.fn.laradrop = function(options) {	
     Dropzone.autoDiscover = false;
     var fileHandler = options.fileHandler,
+    	fileDeleteHandler = options.fileDeleteHandler,
     	fileSrc = options.fileSrc,
     	csrfToken = options.csrfToken,
     	csrfTokenField = options.csrfTokenField ? options.csrfTokenField : '_token',
+    	areYouSureText = options.areYouSureText ? options.areYouSureText : 'Are you sure?',
     	processingDisplay = options.processingDisplay ? options.processingDisplay : 'processing...',
     	uid = new Date().getTime(),
     	laradropObj = jQuery(this);
    
    if(jQuery(this).attr('laradrop-upload-handler')) {
 	   fileHandler = jQuery(this).attr('laradrop-upload-handler');
+   }
+   
+   if(jQuery(this).attr('laradrop-file-delete-handler')) {
+	   fileDeleteHandler = jQuery(this).attr('laradrop-file-delete-handler');
    }
    
    if(jQuery(this).attr('laradrop-file-source')) {
@@ -176,21 +183,23 @@ jQuery.fn.laradrop = function(options) {
 	   csrfTokenField = jQuery(this).attr('laradrop-csrf-token-field');
    }
     	
-   jQuery('body').after(getModalContainer()); 	
+   jQuery('body').after(getModalContainer());
+   jQuery('.laradrop-modal-container .modal-body').css({'overflow-y':'auto', 'height': jQuery(window).height()-200+'px'});
+   
+   var btnText = jQuery("#modal-container-"+uid+" .btn-upload").text()
 
-    var dzImg = new Dropzone("#modal-container-"+uid+" .btn-upload", { 
+    new Dropzone("#modal-container-"+uid+" .btn-upload", { 
         url: fileHandler,
         init: function(){
-        	var btnText = jQuery("#modal-container-"+uid+" .btn-upload").text();
         	this.on("sending", function(file, xhr, data) {
                 data.append(csrfTokenField, csrfToken);
-                jQuery("#modal-container-"+uid+" .btn-upload").text(processingDisplay);
+                displayProcessing();
             });
             
             this.on("success", function(obj, res) {
             	jQuery.get(fileSrc, function(files){ 
             		displayMedia(files);
-            		jQuery("#modal-container-"+uid+" .btn-upload").text(btnText);
+            		hideProcessing();
             	});
             });
             
@@ -199,7 +208,7 @@ jQuery.fn.laradrop = function(options) {
             	return false;
             });
         }
-    });    
+    });  
     
     	
 	jQuery(this).find('.laradrop-select-file').click(function(e){
@@ -209,13 +218,21 @@ jQuery.fn.laradrop = function(options) {
 			jQuery('.laradrop-modal-container').modal('toggle');
 		});
 	});
+	
+	function displayProcessing(){
+		jQuery("#modal-container-"+uid+" .btn-upload").text(processingDisplay);
+	}
+	
+	function hideProcessing(){
+		jQuery("#modal-container-"+uid+" .btn-upload").text(btnText);
+	}
 
 	function displayMedia(res){
 			var out='<div  class="row list-group">';
 			jQuery.each(res.data, function(k,v){
-				out+=getThumbnailContainer().replace('[[fileSrc]]', v.file);
+				out+=getThumbnailContainer().replace('[[fileSrc]]', v.file).replace('[[fileId]]',v.id);
 			});
-			out+='</div></div>';
+			out+='</div>';
 			jQuery('.laradrop-modal-container').find('.modal-title').text('Media');
 			jQuery('.laradrop-modal-container').find('.modal-body').html(out);
 			jQuery('.laradrop-modal-container').find('.insert').click(function(){
@@ -223,19 +240,57 @@ jQuery.fn.laradrop = function(options) {
 				laradropObj.find('.laradrop-file-thumb').html('<img src="'+src+'" />');
 				laradropObj.find('.laradrop-input').val(src);
 				jQuery('.laradrop-modal-container').modal('hide');
-			});		
+			});	  
+		    
+		    jQuery('.laradrop-modal-container .delete').click(function(e) {
+		    	e.preventDefault();
+		    	var fileId = jQuery(this).attr('file-id');
+		    	
+		    	fileDeleteHandler = fileDeleteHandler.replace(fileDeleteHandler.substr(fileDeleteHandler.lastIndexOf('/')), '/'+fileId);
+		    	
+		    	if(!confirm(areYouSureText)) {
+		    		return false;
+		    	}
+
+		    	displayProcessing();
+		    	
+				jQuery.ajax({
+				    url: fileDeleteHandler,
+				    type: 'DELETE',
+				    dataType: 'json',
+			        headers: {
+			        	'X-CSRF-TOKEN': csrfToken
+			        },
+				    success: function(res) {
+		            	jQuery.get(fileSrc, function(files){ 
+		            		displayMedia(files);
+		            		hideProcessing();
+		            	});
+				    }
+				});
+		    });
+		    
+		    jQuery('.laradrop-thumbnail .thumbnail').hover(
+		    		  function() {
+		    			  jQuery(this).find('.caption').fadeIn('fast');
+		    			  }, function() {
+		    				  jQuery(this).find('.caption').fadeOut('fast');
+		    			  }
+		    			);
+		    
+
 	}	
 
 	function getModalContainer() {
 		return '\
-    	<div class="modal fade laradrop-modal-container" id="modal-container-'+uid+'" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">\
+    	<div class="modal fade laradrop-modal-container"  id="modal-container-'+uid+'" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">\
 		  <div class="modal-dialog modal-lg">\
-		    <div class="modal-content">\
+		    <div class="modal-content" >\
 		      <div class="modal-header">\
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>\
 		        <h4 class="modal-title"></h4>\
 		      </div>\
-		      <div class="modal-body">\
+		      <div class="modal-body" >\
 		        ...\
 		      </div>\
 		      <div class="modal-footer">\
@@ -249,16 +304,16 @@ jQuery.fn.laradrop = function(options) {
 	
 	function getThumbnailContainer() {
 		return '\
-		<div class="item laradrop-thumbnail col-xs-4 col-lg-4">\
-			<div class="thumbnail">\
-			<img class="group list-group-image" src="[[fileSrc]]" alt="" />\
-				<div class="caption">\
+		<div class="item laradrop-thumbnail col-xs-12 col-md-2">\
+			<div class="thumbnail" style="cursor:pointer;">\
+				<img class="group list-group-image" src="[[fileSrc]]" alt="" />\
+				<div class="caption" style="display:none;float:right;margin-top:-40px;">\
 					<div class="row">\
-						<div class="col-xs-6 col-md-3">\
-							<button class="btn btn-success insert">Insert</button>\
+						<div class="col-md-5">\
+							<button class="btn btn-success btn-xs insert">Insert</button>\
 						</div>\
-						<div class="col-xs-6 col-md-3">\
-							<button class="btn btn-danger delete">Delete</button>\
+						<div class="col-md-5">\
+							<button class="btn btn-danger btn-xs delete" file-id="[[fileId]]" >Delete</button>\
 						</div>\
 					</div>\
 				</div>\

@@ -68,6 +68,7 @@
             <div
                 class="form-group laradrop-test"
                 laradrop-upload-handler="{{ route('admin.files.store') }}"
+                laradrop-file-delete-handler="{{ route('admin.files.destroy') }}" 
                 laradrop-file-source="{{ route('admin.files.index') }}"
                 laradrop-csrf-token="{{ csrf_token() }}" >
                 <label>{{ trans('app.image') }}</label>
