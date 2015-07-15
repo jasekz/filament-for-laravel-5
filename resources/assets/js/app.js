@@ -192,20 +192,24 @@ jQuery.fn.laradrop = function(options) {
         url: fileHandler,
         init: function(){
         	this.on("sending", function(file, xhr, data) {
+        		var random = Math.random().toString(36).replace('.', '');
+        		$('.modal-body').append(getThumbnailContainer(random).replace('[[fileSrc]]', '/img/loading.gif'));
                 data.append(csrfTokenField, csrfToken);
+                data.append('thumbId', random);
                 displayProcessing();
             });
             
             this.on("success", function(obj, res) {
-            	jQuery.get(fileSrc, function(files){ 
-            		displayMedia(files);
-            		hideProcessing();
-            	});
+            	jQuery('#'+res.thumbId).find('img').attr('src', res.url);
+            	
             });
             
-            this.on("addedfile", function(file) {
-            	jQuery('.dz-preview, .dz-processing, .dz-image-preview, .dz-success, .dz-complete').remove();
-            	return false;
+            this.on("uploadprogress", function(obj, progress, bytesSent){
+            	console.log(progress);
+            });
+            
+            this.on("queuecomplete", function(){
+            	hideProcessing();
             });
         }
     });  
@@ -228,11 +232,10 @@ jQuery.fn.laradrop = function(options) {
 	}
 
 	function displayMedia(res){
-			var out='<div  class="row list-group">';
+			var out='';
 			jQuery.each(res.data, function(k,v){
-				out+=getThumbnailContainer().replace('[[fileSrc]]', v.file).replace('[[fileId]]',v.id);
+				out+=getThumbnailContainer(Math.random().toString(36).replace('.', '')).replace('[[fileSrc]]', v.file).replace('[[fileId]]',v.id);
 			});
-			out+='</div>';
 			jQuery('.laradrop-modal-container').find('.modal-title').text('Media');
 			jQuery('.laradrop-modal-container').find('.modal-body').html(out);
 			jQuery('.laradrop-modal-container').find('.insert').click(function(){
@@ -290,9 +293,7 @@ jQuery.fn.laradrop = function(options) {
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>\
 		        <h4 class="modal-title"></h4>\
 		      </div>\
-		      <div class="modal-body" >\
-		        ...\
-		      </div>\
+		      <div class="modal-body row list-group" ></div>\
 		      <div class="modal-footer">\
 		        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\
 		        <button type="button" class="btn btn-primary btn-upload">Upload</button>\
@@ -302,9 +303,9 @@ jQuery.fn.laradrop = function(options) {
 		</div>';
 	}
 	
-	function getThumbnailContainer() {
+	function getThumbnailContainer(id) {
 		return '\
-		<div class="item laradrop-thumbnail col-xs-12 col-md-2">\
+		<div class="item laradrop-thumbnail col-xs-12 col-md-2" id="'+id+'" >\
 			<div class="thumbnail" style="cursor:pointer;">\
 				<img class="group list-group-image" src="[[fileSrc]]" alt="" />\
 				<div class="caption" style="display:none;float:right;margin-top:-40px;">\

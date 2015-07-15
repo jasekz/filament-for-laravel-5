@@ -9,6 +9,7 @@ use OAuth\Common\Consumer\Credentials;
 use App\Services\File;
 
 use Exception;
+use Input;
 
 class FileController extends AdminController {
     
@@ -42,14 +43,14 @@ class FileController extends AdminController {
 	public function store()
 	{	  
         try {
-            $fileName = $this->file->store('test-storage');
+            $file = $this->file->store('test-storage');
         } 
 
         catch (Exception $e) {
             return response()->json(['status' => 'error', 'data' => $e->getMessage()]);
         }
         
-        return response()->json(['status' => 'success']);
+        return response()->json(['status' => 'success', 'url' => $file->file, 'thumbId' => Input::get('thumbId')]);
 	}
 	
 	public function destroy($id)
