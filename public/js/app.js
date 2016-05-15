@@ -275,6 +275,7 @@ d.trigger("activate.bs.scrollspy")},b.prototype.clear=function(){a(this.selector
 
 $(document).ready(function() {
 	app.init();
+	$('.dual-list').DualListBox();
 });
 
 var app = {
@@ -347,14 +348,24 @@ var app = {
 			
 			var form = $(this),
 				method = form.attr('method'),
-				action = form.attr('action');
+				action = form.attr('action'),
+				formData = form.serialize();
 			
 			showProcessing();
 			
+			// extract 'dual list' data
+			form.find('.selected').each(function(){
+				var name = $(this).attr('name');
+				
+				$(this).find('option').each(function(){
+					formData+='&'+name+'='+$(this).attr('value');
+				});
+			});
+					
 			$.ajax({
 			    url: action,
 			    type: method,
-			    data: form.serialize(),
+			    data: formData,
 			    dataType: 'json',
 		        headers: {
 		        	'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -392,6 +403,20 @@ var app = {
                         		  msg+
                         		'</div>');
                     }
+			    },
+			    error: function(res) {
+			    	app.clearErrors();
+			    	hideProcessing();
+                    var msg = res.msg ? res.msg : 'Please correct the errors below.';
+                    $.each(res.responseJSON, function(k,v){
+                            $('#'+k).closest('.form-group').addClass('has-error');
+                            $('#'+k).after('<span class="has-error help-block error">'+v+'</span>');
+                        }); 
+
+                    $('.page-header').after('<div class="alert alert-danger alert-dismissible" role="alert">'+
+                      		  '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
+                      		  msg+
+                      		'</div>')
 			    }
 			});
 						

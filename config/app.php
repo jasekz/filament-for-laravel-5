@@ -148,6 +148,7 @@ return [
 	     * Third party packages
 	     */
 	    Zizaco\Entrust\EntrustServiceProvider::class,
+        Pmesolution\Crtcsa\CrtcsaServiceProvider::class,
 
     ],
 
@@ -201,6 +202,12 @@ return [
 	     * Third party aliases
 	     */
 	    'Entrust' => Zizaco\Entrust\EntrustFacade::class,
+        'CRT_Product' => Pmesolution\Crtcsa\Facades\Product::class,
+        'CRT_Attribute' => Pmesolution\Crtcsa\Facades\Attribute::class,
+        'CRT_Value' => Pmesolution\Crtcsa\Facades\Value::class,
+        'CRT_Category' => Pmesolution\Crtcsa\Facades\Category::class,
+        'CRT_Manufacturer' => Pmesolution\Crtcsa\Facades\Manufacturer::class,
+        'CRT_Assembly' => Pmesolution\Crtcsa\Facades\Assembly::class,
 
     ],
     

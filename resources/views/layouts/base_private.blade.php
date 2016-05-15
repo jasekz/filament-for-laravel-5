@@ -12,6 +12,7 @@
     name="csrf-token"
     content="{{ csrf_token() }}">
 <title>{{ Config::get('app.appname') }}</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 <link
     rel="stylesheet"
     href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
@@ -27,6 +28,9 @@
     <![endif]-->
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
+<script src="/js/DualListBox/dist/dual-list-box.js"></script>
+
 <script src="/js/app.js"></script>
 
 </head>
@@ -55,5 +59,7 @@
     </div>
 
     @include('layouts.footer')
+    
+
 </body>
 </html>

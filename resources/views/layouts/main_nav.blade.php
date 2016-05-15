@@ -29,6 +29,10 @@
             
           </ul>
         </li>
+        <li><a href="{{ URL::route('admin.assemblies.index') }}" title="{{ trans('crt::app.assemblies') }}" class="{{ isset($active) && $active == 'assemblies' ? 'active' : '' }}" ><span>{{ trans('crt::app.assemblies') }}</span></a></li></li>   
+        <li><a href="{{ URL::route('admin.products.index') }}" title="{{ trans('crt::app.products') }}" class="{{ isset($active) && $active == 'products' ? 'active' : '' }}" ><span>{{ trans('crt::app.products') }}</span></a></li></li>   
+        <li><a href="{{ URL::route('admin.manufacturers.index') }}" title="{{ trans('crt::app.manufacturers') }}" class="{{ isset($active) && $active == 'manufacturers' ? 'active' : '' }}" ><span>{{ trans('crt::app.manufacturers') }}</span></a></li></li>   
+        
       </ul>
       <ul class="nav navbar-nav navbar-right"> 
         <li class="dropdown {{ isset($active) && $active == 'admin' ? 'active' : '' }}">
